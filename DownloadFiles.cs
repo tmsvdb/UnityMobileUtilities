@@ -69,7 +69,7 @@ namespace MobileUtilities
                 yield return www;
 
             if (!string.IsNullOrEmpty(www.error))
-                throw new DownloadFailedException(string.Format("Failed to download file '{0}' because an error occurred: {1}", www.error));
+                throw new DownloadFailedException(string.Format("Failed to download file from url {0} because an error occurred: {1}", url, www.error));
 
             onCompleteCallback(www);
         }

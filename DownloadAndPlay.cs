@@ -73,7 +73,7 @@ public interface IDownloadAndPlay
             To listen to these events you still have to subscribe to the different events within this object!
 
     */
-    void AutomatedDownloadAndPlay(string downloadLocation, string filename, DownloadAndPlayEvents events = null);
+    void AutomatedDownloadAndPlay(string downloadLocation, string filename, string extension, DownloadAndPlayEvents events = null);
 
     /*
         Download a movie from a url location
@@ -141,13 +141,23 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
     private MobileUtilities.IDeviceStorage deviceStorage;
     private MobileUtilities.IDownloadFiles downloadFiles;
 
+    private AtlasUtilities.Blobs blobs;
+    private AtlasUtilities.MimeTypeConverter mimeTypeConverter;
+
+    private DebugOverlay debug;
+
     void Start()
     {
         moviePlayer = gameObject.AddComponent<MobileUtilities.MoviePlayer>();
         deviceStorage = gameObject.AddComponent<MobileUtilities.DeviceStorage>();
         downloadFiles = gameObject.AddComponent<MobileUtilities.DownloadFiles>();
 
-        AutomatedDownloadAndPlay("https://blobs.upscore.nl/v0/", "c9e273fa-39ec-4076-a10c-ed366c71ea16");
+        blobs = new AtlasUtilities.Blobs();
+        mimeTypeConverter = new AtlasUtilities.MimeTypeConverter();
+
+        debug = gameObject.AddComponent<DebugOverlay>();
+
+        AutomatedDownloadAndPlay("https://blobs.upscore.nl/v0/", "c9e273fa-39ec-4076-a10c-ed366c71ea16", ".mp4");
     }
 
     /*
@@ -156,36 +166,36 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
         ----------------------------
     */
 
-    public void AutomatedDownloadAndPlay(string downloadLocation, string filename, DownloadAndPlayEvents events = null)
+    public void AutomatedDownloadAndPlay(string downloadLocation, string filename, string extension, DownloadAndPlayEvents events = null)
     {
-        Debug.Log("[DownloadAndPlay] Automated DownloadAndPlay: " + downloadLocation + filename);
+        debug.Log("[DownloadAndPlay] Automated DownloadAndPlay: " + downloadLocation + filename);
 
         if (events == null) events = new DownloadAndPlayEvents();
 
-        LoadMovieAndPlay(downloadLocation, filename, events, false);
+        LoadMovieAndPlay(downloadLocation, filename, extension, events, false);
     }
 
     public void DownloadMovie(string downloadLocation, string filename, Action<WWW> DownloadComplete, Action<float> DownLoadProgress = null)
     {
-        Debug.Log("[DownloadAndPlay] Download Movie: " + downloadLocation + filename);
+        debug.Log("[DownloadAndPlay] Download Movie: " + downloadLocation + filename);
         downloadFiles.Download(downloadLocation + filename, DownloadComplete, DownLoadProgress);
     }
 
     public void WriteToFile(string filename, byte[] bytes)
     {
-        Debug.Log("[DownloadAndPlay] Write To File: " + filename);
+        debug.Log("[DownloadAndPlay] Write To File: " + filename);
         deviceStorage.Save(filename, bytes);
     }
 
     public void PlayMovie(string filename, Action MovieFinished)
     {
-        Debug.Log("[DownloadAndPlay] Play Movie: " + deviceStorage.AbsoluteFileName(filename));
+        debug.Log("[DownloadAndPlay] Play Movie: " + deviceStorage.AbsoluteFileName(filename));
         moviePlayer.Play(deviceStorage.AbsoluteFileName(filename), MovieFinished);
     }
 
     public void DeleteFile(string filename)
     {
-        Debug.Log("[DownloadAndPlay] Delete File: " + filename);
+        debug.Log("[DownloadAndPlay] Delete File: " + filename);
         deviceStorage.Delete(filename);
     }
 
@@ -195,9 +205,9 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
         ----------------------------
     */
 
-    void LoadMovieAndPlay(string downloadLocation, string filename, DownloadAndPlayEvents events, bool isRecursive = false)
+    void LoadMovieAndPlay(string downloadLocation, string filename, string extension, DownloadAndPlayEvents events, bool isRecursive = false)
     {
-        if (!deviceStorage.Exist(filename))
+        if (!deviceStorage.Exist(filename + extension))
         {
             if (!isRecursive)
             {
@@ -210,37 +220,39 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
                         if (events.DownloadComplete != null)
                             events.DownloadComplete(www);
 
-                        Debug.Log("[DownloadAndPlay] Download Complete");
+                        debug.Log("[DownloadAndPlay] Download Complete");
 
                         if (!string.IsNullOrEmpty(www.error))
-                            Debug.Log("[DownloadAndPlay] Download ERROR: " + www.error);
+                            debug.Log("[DownloadAndPlay] Download ERROR: " + www.error);
 
-                        WriteToFile(filename, www.bytes);
-                        LoadMovieAndPlay(downloadLocation, filename, events, true);
+                        WriteToFile(filename + extension, www.bytes);
+                        LoadMovieAndPlay(downloadLocation, filename, extension, events, true);
                     },
                     (float p) =>
                     {
-                        Debug.Log("[DownloadAndPlay] Progress: " + p);
+                        debug.Log("[DownloadAndPlay] Progress: " + p);
                         if (events.DownLoadProgress != null)
                             events.DownLoadProgress(p);
                     }
-                   
-                    
+
+
                 );
             }
             else
             {
                 if (events.WriteFailed != null) events.WriteFailed();
-                Debug.Log("[DownloadAndPlay] WriteFailed");
+                debug.Log("[DownloadAndPlay] WriteFailed");
             }
         }
         else
         {
-            PlayMovie(filename, () => 
+            PlayMovie(filename + extension, () =>
             {
-                Debug.Log("[DownloadAndPlay] Movie Finished");
+                debug.Log("[DownloadAndPlay] Movie Finished");
                 if (events.MovieFinished != null) events.MovieFinished();
             });
         }
     }
+
+     
 }
