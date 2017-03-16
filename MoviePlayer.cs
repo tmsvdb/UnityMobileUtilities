@@ -39,7 +39,7 @@ namespace MobileUtilities
 
         IEnumerator Playback(string path, Action finishedCallback = null)
         {
-            Handheld.PlayFullScreenMovie("file://" + path, Color.black, FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFill);
+            Handheld.PlayFullScreenMovie("file://" + path, Color.black, FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit);
 
             yield return new WaitForEndOfFrame();
             yield return new WaitForEndOfFrame();
