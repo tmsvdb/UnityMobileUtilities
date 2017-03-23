@@ -141,10 +141,10 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
     private MobileUtilities.IDeviceStorage deviceStorage;
     private MobileUtilities.IDownloadFiles downloadFiles;
 
-    private AtlasUtilities.Blobs blobs;
-    private AtlasUtilities.MimeTypeConverter mimeTypeConverter;
+   // private AtlasUtilities.Blobs blobs;
+    //private AtlasUtilities.MimeTypeConverter mimeTypeConverter;
 
-    private DebugOverlay debug;
+    //private DebugOverlay debug;
 
     void Start()
     {
@@ -152,10 +152,10 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
         deviceStorage = gameObject.AddComponent<MobileUtilities.DeviceStorage>();
         downloadFiles = gameObject.AddComponent<MobileUtilities.DownloadFiles>();
 
-        blobs = new AtlasUtilities.Blobs();
-        mimeTypeConverter = new AtlasUtilities.MimeTypeConverter();
+        //blobs = new AtlasUtilities.Blobs();
+        //mimeTypeConverter = new AtlasUtilities.MimeTypeConverter();
 
-        debug = gameObject.AddComponent<DebugOverlay>();
+        //debug = gameObject.AddComponent<DebugOverlay>();
 
         AutomatedDownloadAndPlay("https://blobs.upscore.nl/v0/", "c9e273fa-39ec-4076-a10c-ed366c71ea16", ".mp4");
     }
@@ -168,7 +168,7 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
 
     public void AutomatedDownloadAndPlay(string downloadLocation, string filename, string extension, DownloadAndPlayEvents events = null)
     {
-        debug.Log("[DownloadAndPlay] Automated DownloadAndPlay: " + downloadLocation + filename);
+        //debug.Log("[DownloadAndPlay] Automated DownloadAndPlay: " + downloadLocation + filename);
 
         if (events == null) events = new DownloadAndPlayEvents();
 
@@ -177,25 +177,25 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
 
     public void DownloadMovie(string downloadLocation, string filename, Action<WWW> DownloadComplete, Action<float> DownLoadProgress = null)
     {
-        debug.Log("[DownloadAndPlay] Download Movie: " + downloadLocation + filename);
+        //debug.Log("[DownloadAndPlay] Download Movie: " + downloadLocation + filename);
         downloadFiles.Download(downloadLocation + filename, DownloadComplete, DownLoadProgress);
     }
 
     public void WriteToFile(string filename, byte[] bytes)
     {
-        debug.Log("[DownloadAndPlay] Write To File: " + filename);
+        //debug.Log("[DownloadAndPlay] Write To File: " + filename);
         deviceStorage.Save(filename, bytes);
     }
 
     public void PlayMovie(string filename, Action MovieFinished)
     {
-        debug.Log("[DownloadAndPlay] Play Movie: " + deviceStorage.AbsoluteFileName(filename));
+        //debug.Log("[DownloadAndPlay] Play Movie: " + deviceStorage.AbsoluteFileName(filename));
         moviePlayer.Play(deviceStorage.AbsoluteFileName(filename), MovieFinished);
     }
 
     public void DeleteFile(string filename)
     {
-        debug.Log("[DownloadAndPlay] Delete File: " + filename);
+        //debug.Log("[DownloadAndPlay] Delete File: " + filename);
         deviceStorage.Delete(filename);
     }
 
@@ -220,17 +220,17 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
                         if (events.DownloadComplete != null)
                             events.DownloadComplete(www);
 
-                        debug.Log("[DownloadAndPlay] Download Complete");
+                        //debug.Log("[DownloadAndPlay] Download Complete");
 
-                        if (!string.IsNullOrEmpty(www.error))
-                            debug.Log("[DownloadAndPlay] Download ERROR: " + www.error);
+                        //if (!string.IsNullOrEmpty(www.error))
+                        //    debug.Log("[DownloadAndPlay] Download ERROR: " + www.error);
 
                         WriteToFile(filename + extension, www.bytes);
                         LoadMovieAndPlay(downloadLocation, filename, extension, events, true);
                     },
                     (float p) =>
                     {
-                        debug.Log("[DownloadAndPlay] Progress: " + p);
+                       // debug.Log("[DownloadAndPlay] Progress: " + p);
                         if (events.DownLoadProgress != null)
                             events.DownLoadProgress(p);
                     }
@@ -241,14 +241,14 @@ public class DownloadAndPlay : MonoBehaviour, IDownloadAndPlay
             else
             {
                 if (events.WriteFailed != null) events.WriteFailed();
-                debug.Log("[DownloadAndPlay] WriteFailed");
+                //debug.Log("[DownloadAndPlay] WriteFailed");
             }
         }
         else
         {
             PlayMovie(filename + extension, () =>
             {
-                debug.Log("[DownloadAndPlay] Movie Finished");
+                //debug.Log("[DownloadAndPlay] Movie Finished");
                 if (events.MovieFinished != null) events.MovieFinished();
             });
         }
