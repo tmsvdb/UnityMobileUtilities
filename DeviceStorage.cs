@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using kernel;
+
 using System.IO;
 using System;
 
@@ -47,6 +49,13 @@ namespace MobileUtilities
 
     public class DeviceStorage : MonoBehaviour, IDeviceStorage
     {
+        private IDebug debugger;
+
+        void Start()
+        {
+            debugger = GetComponent<Debugger>();
+        }
+
         /*
             PUBLIC
         */
@@ -93,7 +102,9 @@ namespace MobileUtilities
             }
             catch (IOException e)
             {
-                throw new WriteToFileException(string.Format("Failed to save your movie because an error occured when using the disk: {0}", e.Message), e);
+                string errorMSG = string.Format("[WriteToFile] ERROR :: Failed to save your movie because an error occured when using the disk: {0}", e.Message);
+                debugger.log(errorMSG);
+                throw new WriteToFileException(errorMSG, e);
             }
         }
 

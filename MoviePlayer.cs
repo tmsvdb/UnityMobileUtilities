@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using kernel;
+
 using System;
 
 namespace MobileUtilities
@@ -24,12 +26,21 @@ namespace MobileUtilities
     */
     public class MoviePlayer : MonoBehaviour, IMoviePlayer
     {
+        IDebug debugger;
+
+        void Start ()
+        {
+            debugger = GetComponent<Debugger>();
+        }
+
         /*
             PUBLIC
         */
 
         public void Play(string fullPath, Action MovieFinished)
         {
+            debugger.log("[MoviePlayer] play => 'file://" + fullPath + "'");
+
             StartCoroutine(Playback(fullPath, MovieFinished));
         }
 

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using kernel;
+
 using System;
 
 namespace MobileUtilities
@@ -39,6 +41,13 @@ namespace MobileUtilities
 
     public class DownloadFiles : MonoBehaviour, IDownloadFiles
     {
+        private IDebug debugger;
+
+        void Start ()
+        {
+            debugger = GetComponent<Debugger>();
+        }
+
         /*
             PUBLIC
         */
@@ -69,7 +78,11 @@ namespace MobileUtilities
                 yield return www;
 
             if (!string.IsNullOrEmpty(www.error))
-                throw new DownloadFailedException(string.Format("Failed to download file from url {0} because an error occurred: {1}", url, www.error));
+            {
+                string errorMSG = string.Format("[DownloadFile] ERROR :: Failed to download file from url {0} because an error occurred: {1}", url, www.error);
+                debugger.log(errorMSG);
+                throw new DownloadFailedException(errorMSG);
+            }
 
             onCompleteCallback(www);
         }
@@ -78,6 +91,7 @@ namespace MobileUtilities
         {
             while (!www.isDone)
             {
+                debugger.log("[DownloadFile] progress: " + Mathf.Round(www.progress*100)+"%");
                 onProgressUpdate(www.progress);
                 yield return new WaitForSeconds(.1f);
             }
